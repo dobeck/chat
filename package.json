@@ -1,0 +1,23 @@
+{
+  "name": "chat",
+  "version": "0.0.1",
+  "description": "chat - node.js + socket.io",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dobeck/chat.git"
+  },
+  "author": "dobeck",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dobeck/chat/issues"
+  },
+  "homepage": "https://github.com/dobeck/chat#readme",
+  "dependencies": {
+    "express": "^4.13.4",
+    "socket.io": "^1.4.5"
+  }
+}
