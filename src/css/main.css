@@ -29,3 +29,13 @@ table {
 }
 
 
+.chat-list {
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    height: 30rem;
+    overflow: auto;
+    padding: 1.5rem;
+}
+
+

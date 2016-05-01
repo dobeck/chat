@@ -12,10 +12,6 @@ var Chat = (function () {
             chatList: $(".chat-list")
         },
 
-        /*events = {
-            "nickNameForm:submit": "_login"
-        },*/
-
         socket = io.connect();
 
     return {
@@ -46,8 +42,8 @@ var Chat = (function () {
         },
 
         _socketListeners: function () {
+
             socket.on("users", function (res) {
-                console.log(res);
                 var list = "";
                 for (i=0; i < res.length; i++) {
                     list += `<li>${res[i]}</li>`;
@@ -55,30 +51,40 @@ var Chat = (function () {
                 ui.usersList.html(list);
             });
 
-            socket.on("setCookie", function () {
-                document.cookie = "auth=true";
-            });
-
-            socket.on("removeCookie", function () {
-                document.cookie = "auth=; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+            socket.on("messages", function(res){
+                var list = "";
+                for (i=0; i < res.length; i++) {
+                    list += `<li style="color: #${res[i].color}"><strong>${res[i].user}</strong> : ${res[i].message}</li>`;
+                }
+                ui.chatList.html(list);
+                ui.chatList[0].scrollTop = ui.chatList[0].scrollHeight
             });
 
             socket.on("addMessage", function(res){
-                ui.chatList.append(`<li><strong>${res.user}</strong> : ${res.message}</li>`);
+                ui.chatList.append(`<li style="color: #${res.color}"><strong>${res.user}</strong> : ${res.message}</li>`);
+                ui.chatList[0].scrollTop = ui.chatList[0].scrollHeight
             });
         },
 
         _checkSession: function () {
-            if (document.cookie.split(";").indexOf("auth=true") !== -1) {
-                this._showChat();
-            }
+            var self = this;
+
+            $.post("/check").done(function (res) {
+                if (res.user && res.color) {
+                    socket.emit("checkSession", res, function (resp) {
+                        if (resp) {
+                            self._showChat();
+                        }
+                    });
+                }
+            });
         },
 
         _showChat: function () {
             ui.nickNameForm.addClass("hide");
             ui.chatWrapper.removeClass("hide");
 
-            socket.emit("refresh");
+            socket.emit("refreshChat");
         },
 
         _hideChat: function () {
@@ -87,18 +93,32 @@ var Chat = (function () {
         },
 
         _login: function () {
-            socket.emit("login", ui.nickNameInput.val(), function (data) {
-                if (data) {
-                    ui.nickNameForm.addClass("hide");
-                    ui.chatWrapper.removeClass("hide");
-                }
+            var self = this,
+                user = ui.nickNameInput.val(),
+                color = (Math.random()*0xFFFFFF<<0).toString(16);
+
+            socket.emit("login", {
+                user: user,
+                color: color
+            }, function (data) {
+                $.post("/login", {
+                    user: user,
+                    color: color
+                }).done(function () {
+                    if (data) {
+                        self._showChat();
+                    }
+                });                
             });            
         },
 
         _logout: function () {
+            var self = this;
+
             socket.emit("logout", function () {
-                ui.nickNameForm.removeClass("hide");
-                ui.chatWrapper.addClass("hide");
+                $.post("/logout").done(function () {
+                    self._hideChat();
+                });                
             });
         },
 
