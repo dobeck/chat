@@ -2,5 +2,5 @@
 
 ## Install Chat
 
-**npm install**
-**node app.js**
+npm install<br/>
+node app.js
