@@ -2,6 +2,7 @@ const http = require("http"),
     express = require("express"),
     session = require("express-session"),
     cookieParser = require("cookie-parser"),
+    querystring = require("querystring"),
     helpers = require("./src/js/helpers.js");
 
 var app = express(),
@@ -25,8 +26,10 @@ app.use(express.static(__dirname + "/src"));
 
 app.post("/login", function (req, res) {
     req.on("data", function (data) {
-        res.cookie("user" , data.toString().split("&")[0].split("=")[1]);
-        res.cookie("color" , data.toString().split("&")[1].split("=")[1]);
+        var data = querystring.parse(data.toString());
+
+        res.cookie("user" , data.user);
+        res.cookie("color" , data.color);
         res.end();
     });
 });

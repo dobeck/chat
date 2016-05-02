@@ -95,7 +95,8 @@ var Chat = (function () {
         _login: function () {
             var self = this,
                 user = ui.nickNameInput.val(),
-                color = (Math.random()*0xFFFFFF<<0).toString(16);
+                //color = (Math.random()*0xFFFFFF<<0).toString(16);
+                color = this._getRandomColor();
 
             socket.emit("login", {
                 user: user,
@@ -125,6 +126,11 @@ var Chat = (function () {
         _sendMessage: function () {
             socket.emit("sendMessage", ui.messageInput.val());
             ui.messageInput.val("");
+        },
+
+        _getRandomColor: function() {
+            var colors = ["FF6699", "CC0099", "3366FF", "CCCC33", "FF6600", "FF3333", "CC00CC", "333399", "CC0066", "990000", "663300", "660000", "800000", "808080", "000000", "FF0000", "800080", "FF00FF", "008000", "00FF00", "808000", "000080", "0000FF", "008080"];
+            return colors[Math.floor(Math.random() * colors.length)];
         }
 
     }
