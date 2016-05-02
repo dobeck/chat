@@ -110,7 +110,6 @@ socketio.sockets.on("connection", function (socket) {
     });
 
     socket.on("editNickname", function (res, callback) {
-        console.log(res.user);
         if (users.indexOf(res.user) !== -1 || res.user === "") {
             callback(false);
         } else {
