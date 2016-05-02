@@ -46,6 +46,15 @@ app.post("/check", function(req, res) {
     res.end();
  });
 
+app.post("/edit-nickname", function (req, res) {
+    req.on("data", function (data) {
+        var data = querystring.parse(data.toString());
+
+        res.cookie("user" , data.user);
+        res.end();
+    });
+});
+
 server.listen(port, function( ) {
     console.log("HTTP Server is running on port", port);
 });
@@ -71,7 +80,7 @@ socketio.sockets.on("connection", function (socket) {
     });
 
     socket.on("login", function (res, callback) {
-        if (users.indexOf(res) !== -1) {
+        if (users.indexOf(res.user) !== -1 || res.user === "") {
             callback(false);
         } else {
             callback(true);
@@ -98,6 +107,19 @@ socketio.sockets.on("connection", function (socket) {
 
         socketio.sockets.emit("addMessage", message);
         messages.push(message);
+    });
+
+    socket.on("editNickname", function (res, callback) {
+        console.log(res.user);
+        if (users.indexOf(res.user) !== -1 || res.user === "") {
+            callback(false);
+        } else {
+            callback(true);
+            helpers.splice(users, socket.user);
+            socket.user = res.user;
+            users.push(socket.user);
+            socketio.sockets.emit("users", users);
+        }
     });
 
 });

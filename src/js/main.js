@@ -9,7 +9,13 @@ var Chat = (function () {
             usersList: $(".users-list"),
             sendMessageForm: $(".send-message-form"),
             messageInput: $(".message-input"),
-            chatList: $(".chat-list")
+            chatList: $(".chat-list"),
+            errorBlock: $(".error"),
+            editNicknameModal: $("#editModal"),
+            editNicknameForm: $(".edit-nickname-form"),
+            editNicknameButton: $(".edit-nickname-btn"),
+            editNicknameInput: $(".edit-nickname-input"),
+            editNicknameErrorBlock: $(".edit-nickname-error")
         },
 
         socket = io.connect();
@@ -39,6 +45,11 @@ var Chat = (function () {
                 e.preventDefault();
                 self._sendMessage();
             });
+
+            ui.editNicknameForm.submit(function (e) {
+                e.preventDefault();
+                self._editNickname();
+            })
         },
 
         _socketListeners: function () {
@@ -90,6 +101,9 @@ var Chat = (function () {
         _hideChat: function () {
             ui.nickNameForm.removeClass("hide");
             ui.chatWrapper.addClass("hide");
+
+            ui.nickNameForm.removeClass("has-error");
+            ui.errorBlock.html("");
         },
 
         _login: function () {
@@ -102,14 +116,23 @@ var Chat = (function () {
                 user: user,
                 color: color
             }, function (data) {
-                $.post("/login", {
-                    user: user,
-                    color: color
-                }).done(function () {
-                    if (data) {
-                        self._showChat();
-                    }
-                });                
+                if (data) {
+                    $.post("/login", {
+                        user: user,
+                        color: color
+                    }).done(function () {
+                        if (data) {
+                            self._showChat();
+                        }
+                    });
+                } else {
+                    ui.nickNameForm.addClass("has-error");
+                    if (user === "") {
+                        ui.errorBlock.html("Please enter your nickname.");
+                    } else {
+                        ui.errorBlock.html("Nickname already exsists.");
+                    }                    
+                }
             });            
         },
 
@@ -124,8 +147,36 @@ var Chat = (function () {
         },
 
         _sendMessage: function () {
-            socket.emit("sendMessage", ui.messageInput.val());
-            ui.messageInput.val("");
+            var msg = ui.messageInput.val();
+
+            if (msg !== "") {
+                socket.emit("sendMessage", msg);
+                ui.messageInput.val("");
+            }
+        },
+
+        _editNickname: function () {
+            var self = this,
+                user = ui.editNicknameInput.val();
+
+            socket.emit("editNickname", {
+                user: user
+            }, function (data) {
+                if (data) {
+                    $.post("/edit-nickname", {
+                        user: user
+                    }).done(function () {
+                        ui.editNicknameModal.modal("hide")
+                    });
+                } else {
+                    ui.editNicknameForm.addClass("has-error");
+                    if (user === "") {
+                        ui.editNicknameErrorBlock.html("Please enter your nickname.");
+                    } else {
+                        ui.editNicknameErrorBlock.html("Nickname already exsists.");
+                    }                    
+                }
+            });
         },
 
         _getRandomColor: function() {
